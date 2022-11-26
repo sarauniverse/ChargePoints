@@ -1,5 +1,6 @@
 package com.cariad.stations.views.ui.navigation
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.Composable
@@ -28,10 +29,7 @@ fun Navigation(chargePointsViewModel: ChargePointsViewModel, chargePointsCriteri
                 val chargePointJson = Uri.encode(Gson().toJson(it))
                 navController.navigate(Screen.ChargePointDetails.route.substituteParams(mapOf("chargePoint" to chargePointJson)))
             }, onNavigateClick = { latitude, longitude ->
-                    val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?daddr=$latitude,$longitude")).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    navController.context.startActivity(mapIntent)
+                    launchMaps(navController.context, latitude, longitude)
                 })
         }
         composable(route = Screen.ChargePointDetails.route, arguments = listOf(
@@ -40,9 +38,18 @@ fun Navigation(chargePointsViewModel: ChargePointsViewModel, chargePointsCriteri
             }
         )) {
             val chargePoint = Gson().fromJson(it.arguments?.getString("chargePoint"), ChargePoint::class.java)
-            ChargePointDetails(chargePoint)
+            ChargePointDetails(chargePoint) { latitude, longitude ->
+                launchMaps(navController.context, latitude, longitude)
+            }
         }
     }
+}
+
+private fun launchMaps(context: Context, latitude: Double, longitude: Double) {
+    val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?daddr=$latitude,$longitude")).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(mapIntent)
 }
 
 fun String.substituteParams(paramMap: Map<String, Any>): String {

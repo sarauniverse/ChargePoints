@@ -25,7 +25,7 @@ import com.cariad.stations.util.getDisplayName
 import com.cariad.stations.views.ui.theme.ChargingStationsTheme
 
 @Composable
-fun ChargePointDetails(chargePoint: ChargePoint) {
+fun ChargePointDetails(chargePoint: ChargePoint, onNavigateClick: (Double, Double) -> Unit) {
     ChargingStationsTheme {
         Scaffold(topBar = {
             TopAppBar(title = {
@@ -34,25 +34,25 @@ fun ChargePointDetails(chargePoint: ChargePoint) {
                 )
             })
         }, modifier = Modifier.fillMaxSize()) {
-            ChargePointDetailsContainer(chargePoint, modifier = Modifier.padding(it))
+            ChargePointDetailsContainer(chargePoint, modifier = Modifier.padding(it), onNavigateClick = onNavigateClick)
         }
     }
 }
 
 @Composable
-private fun ChargePointDetailsContainer(chargePoint: ChargePoint, modifier: Modifier) {
+private fun ChargePointDetailsContainer(chargePoint: ChargePoint, modifier: Modifier, onNavigateClick: (Double, Double) -> Unit) {
     Column(modifier = modifier
         .verticalScroll(rememberScrollState())
         .fillMaxWidth()
         .padding(bottom = 16.dp)) {
-        ChargePointSummary(chargePoint = chargePoint, modifier = modifier)
+        ChargePointSummary(chargePoint = chargePoint, modifier = modifier, onNavigateClick = onNavigateClick)
         ConnectionsDetails(connectionInfoList = chargePoint.connections, modifier = modifier)
         UsageDetail(usageType = chargePoint.usageType, modifier = modifier)
     }
 }
 
 @Composable
-private fun ChargePointSummary(chargePoint: ChargePoint, modifier: Modifier) {
+private fun ChargePointSummary(chargePoint: ChargePoint, modifier: Modifier, onNavigateClick: (Double, Double) -> Unit) {
     Column(horizontalAlignment = Alignment.Start, modifier = modifier.padding(16.dp)) {
         Text(text = chargePoint.getDisplayName(), fontSize = 24.sp, fontWeight = FontWeight.Bold)
     }
@@ -66,7 +66,7 @@ private fun ChargePointSummary(chargePoint: ChargePoint, modifier: Modifier) {
             }
             Column {
                 Button(onClick = {
-
+                    onNavigateClick.invoke(chargePoint.addressInfo.latitude, chargePoint.addressInfo.longitude)
                 }, shape = AbsoluteRoundedCornerShape(50)) {
                     Text(text = stringResource(id = R.string.charge_point_item_btn_text_navigate))
                 }
