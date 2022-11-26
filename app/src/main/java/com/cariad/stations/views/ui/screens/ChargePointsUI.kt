@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChargePoints(chargePointsViewModel: ChargePointsViewModel,
                  chargePointsCriteria: ChargePointsCriteria,
-                 onItemInfoClick: (ChargePoint) -> Unit) {
+                 onItemInfoClick: (ChargePoint) -> Unit, onNavigateClick: (Double, Double) -> Unit) {
     ChargingStationsTheme {
         val center = remember {
             LatLng(chargePointsCriteria.centreLatitude, chargePointsCriteria.centreLongitude)
@@ -102,7 +102,8 @@ fun ChargePoints(chargePointsViewModel: ChargePointsViewModel,
                         modalBottomSheetState.show()
                     }
                 },
-                onItemInfoClick = onItemInfoClick
+                onItemInfoClick = onItemInfoClick,
+                onNavigateClick = onNavigateClick
             )
         }
     }
@@ -139,7 +140,8 @@ private fun FloatingButton(modalBottomSheetState: ModalBottomSheetState,
 private fun ChargePointsList(chargePoints: List<ChargePoint>,
                              modifier: Modifier,
                              selectedChargePointState: MutableState<ChargePoint?>,
-                             onItemInfoClick: (ChargePoint) -> Unit) {
+                             onItemInfoClick: (ChargePoint) -> Unit,
+                             onNavigateClick: (Double, Double) -> Unit) {
     var effectiveChargePoints = chargePoints
     selectedChargePointState.value?.let {
         effectiveChargePoints = listOf(it)
@@ -149,7 +151,7 @@ private fun ChargePointsList(chargePoints: List<ChargePoint>,
         .fillMaxWidth()
         .defaultMinSize(100.dp)) {
         items(effectiveChargePoints) {
-            ChargePointItem(chargePoint = it, modifier = modifier, onItemInfoClick)
+            ChargePointItem(chargePoint = it, modifier = modifier, onItemInfoClick, onNavigateClick)
             Divider(color = Color.LightGray, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         }
     }
@@ -158,7 +160,8 @@ private fun ChargePointsList(chargePoints: List<ChargePoint>,
 @Composable
 private fun ChargePointItem(chargePoint: ChargePoint,
                             modifier: Modifier,
-                            onItemInfoClick: (ChargePoint) -> Unit) {
+                            onItemInfoClick: (ChargePoint) -> Unit,
+                            onNavigateClick: (Double, Double) -> Unit) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(text = chargePoint.getDisplayName(), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
@@ -170,7 +173,11 @@ private fun ChargePointItem(chargePoint: ChargePoint,
     }
     Column(modifier = modifier.fillMaxWidth()) {
         Row (horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = { }, shape = AbsoluteRoundedCornerShape(50)) {
+            Button(onClick = {
+                    onNavigateClick.invoke(chargePoint.addressInfo.latitude,
+                        chargePoint.addressInfo.longitude)
+                 },
+                shape = AbsoluteRoundedCornerShape(50)) {
                 Text(text = stringResource(id = R.string.charge_point_item_btn_text_navigate))
             }
             Button(onClick = { onItemInfoClick.invoke(chargePoint)  }, shape = AbsoluteRoundedCornerShape(50)) {
@@ -188,11 +195,16 @@ private fun BottomSheetChargePointsList(center: LatLng,
                                         selectedChargePointState: MutableState<ChargePoint?>,
                                         modifier: Modifier,
                                         onMapMarkerClicked: (ChargePoint) -> Unit,
-                                        onItemInfoClick: (ChargePoint) -> Unit) {
+                                        onItemInfoClick: (ChargePoint) -> Unit,
+                                        onNavigateClick: (Double, Double) -> Unit) {
     ModalBottomSheetLayout(
         sheetContent = {
             Box(modifier = Modifier.height(1.dp))
-            ChargePointsList(chargePoints = chargePoints, modifier = Modifier, selectedChargePointState = selectedChargePointState, onItemInfoClick = onItemInfoClick)
+            ChargePointsList(chargePoints = chargePoints,
+                modifier = Modifier,
+                selectedChargePointState = selectedChargePointState,
+                onItemInfoClick = onItemInfoClick,
+                onNavigateClick = onNavigateClick)
         },
         sheetBackgroundColor = Color.White,
         sheetElevation = 0.dp,

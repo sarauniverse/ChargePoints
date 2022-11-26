@@ -1,8 +1,10 @@
 package com.cariad.stations.views.ui.navigation
 
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,10 +22,17 @@ fun Navigation(chargePointsViewModel: ChargePointsViewModel, chargePointsCriteri
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.ChargePoints.route) {
         composable(route = Screen.ChargePoints.route) {
-            ChargePoints(chargePointsViewModel = chargePointsViewModel, chargePointsCriteria = chargePointsCriteria) {
+            ChargePoints(chargePointsViewModel = chargePointsViewModel,
+                chargePointsCriteria = chargePointsCriteria,
+                onItemInfoClick = {
                 val chargePointJson = Uri.encode(Gson().toJson(it))
                 navController.navigate(Screen.ChargePointDetails.route.substituteParams(mapOf("chargePoint" to chargePointJson)))
-            }
+            }, onNavigateClick = { latitude, longitude ->
+                    val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?daddr=$latitude,$longitude")).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    navController.context.startActivity(mapIntent)
+                })
         }
         composable(route = Screen.ChargePointDetails.route, arguments = listOf(
             navArgument("chargePoint") {
