@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class ChargePointsViewModel @Inject constructor(
@@ -27,7 +28,6 @@ class ChargePointsViewModel @Inject constructor(
     }
 
     fun refreshChargePoints(chargePointsCriteria: ChargePointsCriteria) {
-//        chargePoints.value = UIState.REFRESHING()
         updateChargePoints(chargePointsCriteria)
     }
 

@@ -15,6 +15,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val tag = this.javaClass.name
+
     private val chargePointsViewModel by viewModels<ChargePointsViewModel>()
     private val chargePointsCriteria = ChargePointsCriteria(
         centreLatitude = 52.526,
@@ -25,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
     private val handlerLifeCycleObserver =  HandlerLifeCycleObserver(handler, 30*1000L) {
+        Log.i(tag, "Refreshing the data")
         chargePointsViewModel.refreshChargePoints(chargePointsCriteria)
     }
 

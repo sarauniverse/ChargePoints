@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">ChargingStations</string>
+
+    <!-- Charge points view -->
+    <string name="charge_points_floating_btn_text_map">Map</string>
+    <string name="charge_points_floating_btn_text_charge_stations">Charge stations</string>
+
+    <!-- Charge point item list view -->
+    <string name="charge_point_item_btn_text_navigate">Navigate</string>
+    <string name="charge_point_item_btn_text_info">Info</string>
+
+    <!-- Charge point details view -->
+    <string name="charge_point_conn_title">Available connections</string>
+    <string name="charge_point_conn_power">Maximum power</string>
+    <string name="charge_point_conn_current">Current</string>
+    <string name="charge_point_conn_voltage">Voltage</string>
+    <string name="charge_point_current_type">Current Type</string>
+    <string name="charge_point_level_title">Connection level</string>
+    <string name="charge_point_payment_title">Payment Options</string>
+    <string name="charge_point_payment_pay_at_location">Pay at location</string>
+    <string name="charge_point_payment_membership_required">Membership required</string>
+
 </resources>
