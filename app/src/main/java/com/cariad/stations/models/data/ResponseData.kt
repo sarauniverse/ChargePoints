@@ -1,15 +1,19 @@
 package com.cariad.stations.models.data
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class ChargePoint(
     @SerializedName("ID") val id: Long,
     @SerializedName("UsageType") val usageType: UsageType?,
     @SerializedName("OperatorInfo") val operatorInfo: OperatorInfo?,
     @SerializedName("AddressInfo") val addressInfo: AddressInfo,
     @SerializedName("Connections") val connections: List<Connection>
-)
+) : Parcelable
 
+@Parcelize
 data class AddressInfo(
     @SerializedName("ID")  val id: Long,
     @SerializedName("Title") val title: String,
@@ -26,22 +30,25 @@ data class AddressInfo(
     @SerializedName("ContactEmail") val contactEmail: String,
     @SerializedName("Distance") val distance: Double,
     @SerializedName("DistanceUnit") val distanceUnit: Int
-)
+): Parcelable
 
+@Parcelize
 data class OperatorInfo(
     @SerializedName("ID") val id: Long,
     @SerializedName("Title") val title: String,
     @SerializedName("WebsiteURL") val websiteUrl: String,
     @SerializedName("ContactEmail") val contactEmail: String
-)
+): Parcelable
 
+@Parcelize
 data class Country(
     @SerializedName("ID") val id: Int,
     @SerializedName("ISOCode") val isoCode: String,
     @SerializedName("ContinentCode") val continentCode: String,
     @SerializedName("Title") val title: String
-)
+): Parcelable
 
+@Parcelize
 data class Connection(
     @SerializedName("ID") val id: Long,
     @SerializedName("Amps") val amps: Double?,
@@ -49,22 +56,25 @@ data class Connection(
     @SerializedName("PowerKW") val power: Double?,
     @SerializedName("CurrentType") val currentType: CurrentType?,
     @SerializedName("Level") val level: ConnectionLevel
-)
+): Parcelable
 
+@Parcelize
 data class CurrentType(
     @SerializedName("ID") val id:Int,
     @SerializedName("Title") val title: String,
     @SerializedName("Description") val description: String
-)
+): Parcelable
 
+@Parcelize
 data class ConnectionLevel(
     @SerializedName("ID" ) val id: Int,
     @SerializedName("Title") val title: String
-)
+): Parcelable
 
+@Parcelize
 data class UsageType(
     @SerializedName("ID") val id: Int,
     @SerializedName("IsPayAtLocation") val isPayAtLocation: Boolean?,
     @SerializedName("IsMembershipRequired") val isMembershipRequired: Boolean?,
     @SerializedName("Title") val title: String?
-)
+): Parcelable

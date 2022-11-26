@@ -10,6 +10,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -34,7 +35,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ChargePoints(chargePointsViewModel: ChargePointsViewModel, chargePointsCriteria: ChargePointsCriteria, onItemInfoClick: (ChargePoint) -> Unit) {
+fun ChargePoints(chargePointsViewModel: ChargePointsViewModel,
+                 chargePointsCriteria: ChargePointsCriteria,
+                 onItemInfoClick: (ChargePoint) -> Unit) {
     ChargingStationsTheme {
         val center = remember {
             LatLng(chargePointsCriteria.centreLatitude, chargePointsCriteria.centreLongitude)
@@ -49,22 +52,42 @@ fun ChargePoints(chargePointsViewModel: ChargePointsViewModel, chargePointsCrite
             else -> arrayListOf()
         }
 
+        val selectedChargePointState = rememberSaveable {
+            mutableStateOf<ChargePoint?>(null)
+        }
+
         val modalBottomSheetState =
             rememberModalBottomSheetState(ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        val floatingActionButtonState = remember {
+            if(modalBottomSheetState.isVisible && selectedChargePointState.value == null) {
+                mutableStateOf<FloatingActionButtonState>(FloatingActionButtonState.ShowMap)
+            }
+            else {
+                mutableStateOf<FloatingActionButtonState>(FloatingActionButtonState.ListAll)
+            }
+        }
         val mainScaffoldState = rememberScaffoldState()
         val scope = rememberCoroutineScope()
 
         Scaffold(floatingActionButton = {
-            FloatingButton(onClick = {
-                scope.launch {
-                    if(modalBottomSheetState.isVisible) {
-                        modalBottomSheetState.hide()
+            Column {
+                FloatingButton(onClick = {
+                    scope.launch {
+                        when(floatingActionButtonState.value) {
+                            is FloatingActionButtonState.ListAll -> {
+                                selectedChargePointState.value = null
+                                modalBottomSheetState.show()
+                                floatingActionButtonState.value = FloatingActionButtonState.ShowMap
+                            }
+                            is FloatingActionButtonState.ShowMap -> {
+                                modalBottomSheetState.hide()
+                                floatingActionButtonState.value = FloatingActionButtonState.ListAll
+                            }
+                        }
                     }
-                    else {
-                        modalBottomSheetState.show()
-                    }
-                }
-            }, modalBottomSheetState = modalBottomSheetState)
+                }, floatingActionButtonState = floatingActionButtonState,
+                    modalBottomSheetState = modalBottomSheetState)
+            }
         },
             scaffoldState = mainScaffoldState) {
             BottomSheetChargePointsList(
@@ -72,6 +95,13 @@ fun ChargePoints(chargePointsViewModel: ChargePointsViewModel, chargePointsCrite
                 chargePoints = chargePoints,
                 modalBottomSheetState = modalBottomSheetState,
                 modifier = Modifier.padding(it),
+                selectedChargePointState = selectedChargePointState,
+                onMapMarkerClicked = { chargePoint ->
+                    scope.launch {
+                        selectedChargePointState.value = chargePoint
+                        modalBottomSheetState.show()
+                    }
+                },
                 onItemInfoClick = onItemInfoClick
             )
         }
@@ -80,13 +110,19 @@ fun ChargePoints(chargePointsViewModel: ChargePointsViewModel, chargePointsCrite
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun FloatingButton(modalBottomSheetState: ModalBottomSheetState, onClick: () -> Unit) {
+private fun FloatingButton(modalBottomSheetState: ModalBottomSheetState,
+                           floatingActionButtonState: MutableState<FloatingActionButtonState>,
+                           onClick: () -> Unit) {
     ExtendedFloatingActionButton(
         text = {
-            if(modalBottomSheetState.isVisible) {
-                Text(stringResource(id = R.string.charge_points_floating_btn_text_map))
-            } else {
+            if(!modalBottomSheetState.isVisible && floatingActionButtonState.value !is FloatingActionButtonState.ListAll) {
                 Text(stringResource(id = R.string.charge_points_floating_btn_text_charge_stations))
+                floatingActionButtonState.value = FloatingActionButtonState.ListAll
+                return@ExtendedFloatingActionButton
+            }
+            when(floatingActionButtonState.value) {
+                is FloatingActionButtonState.ListAll -> Text(stringResource(id = R.string.charge_points_floating_btn_text_charge_stations))
+                is FloatingActionButtonState.ShowMap -> Text(stringResource(id = R.string.charge_points_floating_btn_text_map))
             }
         },
         icon = { Icon(Icons.Filled.List,"") },
@@ -100,12 +136,19 @@ private fun FloatingButton(modalBottomSheetState: ModalBottomSheetState, onClick
 }
 
 @Composable
-private fun ChargePointsList(chargePoints: List<ChargePoint>, modifier: Modifier, onItemInfoClick: (ChargePoint) -> Unit) {
+private fun ChargePointsList(chargePoints: List<ChargePoint>,
+                             modifier: Modifier,
+                             selectedChargePointState: MutableState<ChargePoint?>,
+                             onItemInfoClick: (ChargePoint) -> Unit) {
+    var effectiveChargePoints = chargePoints
+    selectedChargePointState.value?.let {
+        effectiveChargePoints = listOf(it)
+    }
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = modifier
         .padding(top = 24.dp, start = 8.dp, end = 8.dp)
         .fillMaxWidth()
         .defaultMinSize(100.dp)) {
-        items(chargePoints) {
+        items(effectiveChargePoints) {
             ChargePointItem(chargePoint = it, modifier = modifier, onItemInfoClick)
             Divider(color = Color.LightGray, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
         }
@@ -113,7 +156,9 @@ private fun ChargePointsList(chargePoints: List<ChargePoint>, modifier: Modifier
 }
 
 @Composable
-private fun ChargePointItem(chargePoint: ChargePoint, modifier: Modifier, onItemInfoClick: (ChargePoint) -> Unit) {
+private fun ChargePointItem(chargePoint: ChargePoint,
+                            modifier: Modifier,
+                            onItemInfoClick: (ChargePoint) -> Unit) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(text = chargePoint.getDisplayName(), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
@@ -140,25 +185,30 @@ private fun ChargePointItem(chargePoint: ChargePoint, modifier: Modifier, onItem
 private fun BottomSheetChargePointsList(center: LatLng,
                                         chargePoints: List<ChargePoint>,
                                         modalBottomSheetState: ModalBottomSheetState,
+                                        selectedChargePointState: MutableState<ChargePoint?>,
                                         modifier: Modifier,
+                                        onMapMarkerClicked: (ChargePoint) -> Unit,
                                         onItemInfoClick: (ChargePoint) -> Unit) {
-    ModalBottomSheetLayout(sheetContent = {
-        Box(modifier = Modifier.height(1.dp))
-        ChargePointsList(chargePoints = chargePoints, modifier = Modifier, onItemInfoClick)
-    },
+    ModalBottomSheetLayout(
+        sheetContent = {
+            Box(modifier = Modifier.height(1.dp))
+            ChargePointsList(chargePoints = chargePoints, modifier = Modifier, selectedChargePointState = selectedChargePointState, onItemInfoClick = onItemInfoClick)
+        },
         sheetBackgroundColor = Color.White,
         sheetElevation = 0.dp,
         modifier = modifier,
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStartPercent = 5, topEndPercent = 5),
-    )
-    {
-        ChargePointsMapView(center = center, chargePoints = chargePoints, modifier)
+    ) {
+        ChargePointsMapView(center = center, chargePoints = chargePoints, modifier = modifier, onMapMarkerClicked = onMapMarkerClicked)
     }
 }
 
 @Composable
-private fun ChargePointsMapView(center: LatLng, chargePoints: List<ChargePoint>, modifier: Modifier = Modifier) {
+private fun ChargePointsMapView(center: LatLng,
+                                chargePoints: List<ChargePoint>,
+                                modifier: Modifier = Modifier,
+                                onMapMarkerClicked: (ChargePoint) -> Unit) {
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(center, 10f)
     }
@@ -171,16 +221,25 @@ private fun ChargePointsMapView(center: LatLng, chargePoints: List<ChargePoint>,
             return@GoogleMap
         }
         val latLongBoundsBuilder = LatLngBounds.Builder()
-        chargePoints.forEach {
-            val markerPosition = LatLng(it.addressInfo.latitude, it.addressInfo.longitude)
+        chargePoints.forEach { chargePoint ->
+            val markerPosition = LatLng(chargePoint.addressInfo.latitude, chargePoint.addressInfo.longitude)
             latLongBoundsBuilder.include(markerPosition)
             Marker(
                 state = MarkerState(position = markerPosition),
-                title = it.addressInfo.title,
-                snippet = it.addressInfo.title
+                title = chargePoint.getDisplayName(),
+                snippet = chargePoint.addressInfo.title,
+                onClick = {
+                    onMapMarkerClicked.invoke(chargePoint)
+                    true
+                }
             )
         }
         val cameraUpdate = CameraUpdateFactory.newLatLngBounds(latLongBoundsBuilder.build(), 5)
         cameraPositionState.move(cameraUpdate)
     }
+}
+
+sealed class FloatingActionButtonState {
+    object ListAll: FloatingActionButtonState()
+    object ShowMap: FloatingActionButtonState()
 }
