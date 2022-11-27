@@ -31,6 +31,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -76,12 +77,12 @@ fun ChargePoints(chargePointsViewModel: ChargePointsViewModel,
                         when(floatingActionButtonState.value) {
                             is FloatingActionButtonState.ListAll -> {
                                 selectedChargePointState.value = null
-                                modalBottomSheetState.show()
                                 floatingActionButtonState.value = FloatingActionButtonState.ShowMap
+                                modalBottomSheetState.show()
                             }
                             is FloatingActionButtonState.ShowMap -> {
-                                modalBottomSheetState.hide()
                                 floatingActionButtonState.value = FloatingActionButtonState.ListAll
+                                modalBottomSheetState.hide()
                             }
                         }
                     }
@@ -116,7 +117,7 @@ private fun FloatingButton(modalBottomSheetState: ModalBottomSheetState,
                            onClick: () -> Unit) {
     ExtendedFloatingActionButton(
         text = {
-            if(!modalBottomSheetState.isVisible && floatingActionButtonState.value !is FloatingActionButtonState.ListAll) {
+            if(modalBottomSheetState.targetValue != ModalBottomSheetValue.Expanded && floatingActionButtonState.value !is FloatingActionButtonState.ListAll) {
                 Text(stringResource(id = R.string.charge_points_floating_btn_text_charge_stations))
                 floatingActionButtonState.value = FloatingActionButtonState.ListAll
                 return@ExtendedFloatingActionButton
