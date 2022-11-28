@@ -10,7 +10,8 @@ data class ChargePoint(
     @SerializedName("UsageType") val usageType: UsageType?,
     @SerializedName("OperatorInfo") val operatorInfo: OperatorInfo?,
     @SerializedName("AddressInfo") val addressInfo: AddressInfo,
-    @SerializedName("Connections") val connections: List<Connection>
+    @SerializedName("Connections") val connections: List<Connection>,
+    @SerializedName("NumberOfPoints") val numberOfPoints: Int?
 ) : Parcelable
 
 @Parcelize

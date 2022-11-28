@@ -173,7 +173,15 @@ private fun ChargePointItem(chargePoint: ChargePoint,
     Column(modifier = modifier.fillMaxWidth()) {
         Text(text = chargePoint.getDisplayAddress())
     }
-    Column(modifier = modifier.fillMaxWidth()) {
+    if(chargePoint.numberOfPoints != null) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            Text(text = stringResource(
+                id = R.string.charge_point_available_charge_points,
+                formatArgs = arrayOf(chargePoint.numberOfPoints)
+            ))
+        }    
+    }
+    Column(modifier = modifier.fillMaxWidth().padding(top = 4.dp)) {
         Row (horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = {
                     onNavigateClick.invoke(chargePoint.addressInfo.latitude,

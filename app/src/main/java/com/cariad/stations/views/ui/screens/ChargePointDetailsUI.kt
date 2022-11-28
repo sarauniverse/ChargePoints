@@ -63,6 +63,9 @@ private fun ChargePointSummary(chargePoint: ChargePoint, modifier: Modifier, onN
             Column {
                 Text(text = chargePoint.getDisplayAddress())
                 Text(text = chargePoint.getDisplayDistance())
+                if(chargePoint.numberOfPoints != null) {
+                    Text(text = stringResource(id = R.string.charge_point_available_charge_points, formatArgs = arrayOf(chargePoint.numberOfPoints)))
+                }
             }
             Column {
                 Button(onClick = {
