@@ -21,4 +21,8 @@
     <string name="charge_point_payment_membership_required">Membership required</string>
     <string name="charge_point_available_charge_points">Available charge points : %1$d</string>
 
+    <string name="error_dialog_play_services_irrecoverable_text">Play Services is not available in the device. App requires Google Play Services.</string>
+    <string name="error_dialog_play_services_irrecoverable_title">Google Play Services is not available</string>
+    <string name="error_dialog_play_services_irrecoverable_btn_close">Close</string>
+
 </resources>
