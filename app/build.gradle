@@ -24,8 +24,15 @@ android {
         }
     }
 
+    def localProperties = new Properties()
+    localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+
     buildTypes {
+        debug {
+            buildConfigField("String", "OCM_API_KEY", "\"" + localProperties['OCM_API_KEY'] + "\"")
+        }
         release {
+            buildConfigField("String", "OCM_API_KEY", "\"" + localProperties['OCM_API_KEY'] + "\"")
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

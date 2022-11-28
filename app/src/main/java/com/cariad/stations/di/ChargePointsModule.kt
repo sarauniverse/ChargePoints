@@ -1,17 +1,18 @@
 package com.cariad.stations.di
 
+import com.cariad.stations.BuildConfig
 import com.cariad.stations.api.ChargePointsService
+import com.cariad.stations.api.OCMApiKeyHeaderInterceptor
 import com.cariad.stations.models.repo.ChargePointsRepositoryImpl
 import com.cariad.stations.models.repo.IChargePointsRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.File
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -36,9 +37,17 @@ object ChargePointsModule {
 
     @Provides
     @Singleton
-    fun getOkHttpClient(): OkHttpClient {
+    fun getOkHttpClient(@Named("OcmApiKey") ocmApiKey: String): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(OCMApiKeyHeaderInterceptor(ocmApiKey))
             .build()
+    }
+
+    @Provides
+    @Singleton
+    @Named("OcmApiKey")
+    fun getOcmApiKey(): String {
+        return BuildConfig.OCM_API_KEY
     }
 
 }
