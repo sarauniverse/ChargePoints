@@ -50,6 +50,7 @@ fun ChargePoints(chargePointsViewModel: ChargePointsViewModel,
 
         val chargePoints = when(uiState.value) {
             is UIState.SUCCESS -> (uiState.value as UIState.SUCCESS<List<ChargePoint>>).obj
+            is UIState.REFRESHING -> (uiState.value as UIState.REFRESHING<List<ChargePoint>>).existingData
             else -> arrayListOf()
         }
 

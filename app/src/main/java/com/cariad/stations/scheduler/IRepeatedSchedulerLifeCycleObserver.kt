@@ -1,0 +1,5 @@
+package com.cariad.stations.scheduler
+
+import androidx.lifecycle.DefaultLifecycleObserver
+
+interface IRepeatedSchedulerLifeCycleObserver : DefaultLifecycleObserver
